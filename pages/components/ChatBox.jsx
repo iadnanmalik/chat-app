@@ -1,6 +1,7 @@
 import styled from "styled-components"
 import React,{useState,useEffect,useRef} from 'react'
-
+import { useUsersContext } from "../../context/UsersContext"
+ import withAuth from "../../HOC/withAuth"
 const OuterDiv = styled.div`
   margin-top:100px;
   display: flex;
@@ -92,31 +93,31 @@ const MessageInput = styled.input`
 `
 
 const MessageButton = styled.button`
-width: 50%;
-max-width: 250px;
-min-width: 150px;
-height: 40px;
-border: none;
-margin: 0.5rem 0;
-box-shadow: 0px 14px 9px -15px rgba(0, 0, 0, 0.25);
-border-radius: 8px;
-background-color: #70edb9;
-color: #fff;
-font-weight: 600;
-cursor: pointer;
-transition: all 0.2s ease-in;
-&:hover {
-    transform: translateY(-3px);
-}
+  width: 50%;
+  max-width: 250px;
+  min-width: 150px;
+  height: 40px;
+  border: none;
+  margin: 0.5rem 0;
+  box-shadow: 0px 14px 9px -15px rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  background-color: #70edb9;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in;
+  &:hover {
+      transform: translateY(-3px);
+  }
 `
 
 
 const ChatBox = (props) => {
-
   const [message,setMessage]=useState("")
   const [messageList,setMessageList]= useState([])
   const messagesEndRef = useRef(null)
-
+  const context= useUsersContext()
+  console.log("Users are:",{...context})
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
@@ -165,7 +166,7 @@ const ChatBox = (props) => {
   );
 }
 
-export default ChatBox
+export default withAuth(ChatBox)
 
 
 const ContactListColumn = styled.div`

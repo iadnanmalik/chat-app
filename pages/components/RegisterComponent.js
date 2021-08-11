@@ -7,11 +7,22 @@ import * as Yup from 'yup';
 import axios from "axios"; 
 import {SERVER_URL} from "../../server"
 import { Container,LogoWrapper,Form, StyledInput, InputContainer, Errors } from "../../styledComps/artifacts";
+import { useRouter } from "next/dist/client/router";
+import { useState, useEffect } from "react";
 
 
 
 
 const RegisterComponent = () => {
+  const router = useRouter()
+  const [token,setToken]=useState('');
+  useEffect(() => {
+    console.log("Token from useEffect",token)
+    localStorage.setItem("token",token)
+    console.log("Token from localStorage",localStorage.getItem("token"))
+    
+    
+  }, [token])
   const handleClick = () =>{
     console.log("Clicked me!")
   }
@@ -40,18 +51,22 @@ const RegisterComponent = () => {
     }),
     onSubmit: async values => {
      
-       const body= JSON.stringify(values)
-       
-      //  const config = {
-      //    headers: {
-      //      "Content-Type": "application/json",
-      //   },
-      // };
-      // const res = await axios.post(`${SERVER_URL}/api/users`, body, config);
-      // console.log(res.data.token)
+      const body= JSON.stringify(values)
+      console.log(body)   
+      const config = {
+         headers: {
+           "Content-Type": "application/json",
+        },
+      };
+      const res = await axios.post(`${SERVER_URL}/api/users`, body, config);
+      //console.log(res.data.token)
+      setToken(res.data.token)
+      router.push("/dashboard")
+    
     },
   });
   return (
+
     <Container>
       <LogoWrapper>
          <Image  src={logo} alt="" />

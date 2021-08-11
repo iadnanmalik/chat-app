@@ -2,10 +2,23 @@ import logo from "../../assets/chat.png";
 import Image from 'next/image';
 import Link from 'next/link'
 import { Container,LogoWrapper,Form, StyledInput, InputContainer, Errors} from "../../styledComps/artifacts";
+import { useRouter } from "next/router";
+import { useState,useEffect } from "react";
 import { useFormik } from 'formik';
+import axios from "axios";
+import { SERVER_URL } from "../../server";
  import * as Yup from 'yup';
  
 const LoginComponent = () => {
+  const router = useRouter()
+  const [token,setToken]=useState('');
+  useEffect(() => {
+    console.log("Token from useEffect from login",token)
+    localStorage.setItem("token",token)
+    console.log("Token from localStorage from login",localStorage.getItem("token"))
+    
+    
+  }, [token])
   const formik = useFormik({
     initialValues: {
       password: '',
@@ -19,9 +32,18 @@ const LoginComponent = () => {
         ,
       email: Yup.string().email('Invalid email address').required('Required'),
     }),
-    onSubmit: values => {
-      alert(JSON.stringify(values, null, 2));
-    },
+    onSubmit: async values => {
+      const body= JSON.stringify(values)
+      console.log(body)   
+      const config = {
+         headers: {
+           "Content-Type": "application/json",
+        },
+      };
+      const res = await axios.post(`${SERVER_URL}/api/auth`, body, config);
+      //console.log(res.data.token)
+      setToken(res.data.token)
+      router.push("/dashboard")    },
   });
   return (
     <Container>
