@@ -1,11 +1,7 @@
 import '../styles/globals.css'
-import { UsersWrapper } from '../context/UsersContext';
-function MyApp({ Component, pageProps }) {
 
-  return (
-  //<UsersWrapper>
-  <Component {...pageProps} />
-  //</UsersWrapper>
-  )}
+function MyApp({ Component, pageProps }) {
+  return <Component {...pageProps} />
+}
 
 export default MyApp
