@@ -1,3 +1,13 @@
+// module.exports = {
+//   reactStrictMode: true,
+// }
 module.exports = {
-  reactStrictMode: true,
-}
+  async rewrites() {
+      return [
+        {
+          source: '/api/:path*',
+          destination: 'https://betatech-chat.herokuapp.com/:path*',
+        },
+      ]
+    },
+};
