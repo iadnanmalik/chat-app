@@ -4,11 +4,7 @@ import { useState } from 'react/cjs/react.development';
 const UsersContext = createContext();
 
 export function UsersWrapper({ children }) {
-  const [user,setUser]= useState([{
-      name:"",
-      email:"",
-      avatar:""
-  }])
+  const [user,setUser]= useState([])
   return (
     <UsersContext.Provider value={{user,setUser}}>
       {children}

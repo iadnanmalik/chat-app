@@ -1,9 +1,14 @@
 import styled from "styled-components"
 import React,{useState,useEffect,useRef} from 'react'
 import { useUsersContext } from "../../context/UsersContext"
+import connection from "../../sockets/connect"
  import withAuth from "../../HOC/withAuth"
-const OuterDiv = styled.div`
-  margin-top:100px;
+ import { LogoWrapper } from "../../styledComps/artifacts"
+import sendMessage from "../../sockets/sendMessage"
+
+
+ const OuterDiv = styled.div`
+  margin-top:30px;
   display: flex;
 `
 
@@ -12,8 +17,7 @@ const ContactColumn = styled.div`
   max-width: 33%;
   position: relative;
   width: 100%;
-  padding-right: 15px;
-  padding-left: 15px;
+  
 `
 
 const ChatColumn = styled.div`
@@ -31,7 +35,7 @@ const MessageListColumn = styled.div`
   background-color: #daeee5;
   box-sizing: border-box;
   border: 1px solid #dee2e6;
-  height: 400px;
+  height: 400px;                       
 `
 
 const Message = styled.div`
@@ -41,6 +45,11 @@ const Message = styled.div`
   background: #f4f7f9;
   border-radius: 10px;
   border: 1px black solid;
+  span {
+    font-size:8px;
+    margin-left:5px;
+    background-color:#9FE2BF;
+  }
 `
 
 const MessageListHeader = styled.div`
@@ -50,11 +59,11 @@ const MessageListHeader = styled.div`
 `
 
 const MessageListTitle = styled.h2`
-padding: 0 1rem;
-text-align: center;
-font-size: 25px;
-color: #666666;
-font-weight: 500;
+  padding: 0 1rem;
+  text-align: center;
+  font-size: 25px;
+  color: #666666;
+  font-weight: 500;           
 `
 const MessageForm = styled.form`
   max-width: 100%;
@@ -111,75 +120,16 @@ const MessageButton = styled.button`
   }
 `
 
-
-const ChatBox = (props) => {
-  const [message,setMessage]=useState("")
-  const [messageList,setMessageList]= useState([])
-  const messagesEndRef = useRef(null)
-  const context= useUsersContext()
-  console.log("Users are:",{...context})
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
-  useEffect(() => {
-    scrollToBottom()
-  }, [messageList])
- const submitForm = event => {
-    event.preventDefault();
-    if(message.length>=1){
-    setMessage("")
-    setMessageList([...messageList,message])
-  }
-  }
-  return (
-    <OuterDiv>
-      <ContactColumn>
-        <ChatContactList user={props.user} usernameList = {props.usernameList}/>
-      </ContactColumn>
-      <ChatColumn style={{border:'1px solid black', 'border-radius':'10px'}}>
-        <MessageListHeader>
-          <MessageListTitle>Your Messages</MessageListTitle>
-        </MessageListHeader>
-        <MessageListColumn>
-          Message List
-          <div>
-            {
-              messageList?.map( message => {
-                return <div key="null" style={{overflow: 'hidden'}}><Message>{ message }</Message></div>
-              })
-            }
-            <div ref={messagesEndRef} />
-          </div>
-        </MessageListColumn>
-        <div >
-          <MessageForm onSubmit={submitForm}>
-            <Col9>
-              <MessageInput type="text" value={message}  onChange={event => setMessage(event.target.value)} placeholder='Type a message...' />
-            </Col9>
-            <Col3>
-              <MessageButton type="submit">Send</MessageButton>
-            </Col3>
-          </MessageForm>
-        </div>
-      </ChatColumn>
-    </OuterDiv>
-  );
-}
-
-export default withAuth(ChatBox)
-
-
 const ContactListColumn = styled.div`
   overflow: auto;
   margin-left: 0;
   margin-right: 0;
-  height: 400px;
-  border: 1px solid #dee2e6;
-  background-color: #fff;
 `
 
 const ContactList = styled.ul`
   display: flex;
+  background-color: #ffffe0;
+  height: 500px;
   flex-direction: column;
   padding-left: 0;
   margin-bottom: 0;
@@ -190,17 +140,15 @@ const ContactList = styled.ul`
 
 const ContactListHeader = styled.div`
   padding: 1rem;
-  background-color: yellow;
-  border: 1px solid #dee2e6;
+ 
 `
 
 const ContactListTitle = styled.h2`
-  font-size: 2rem;
-  font-weight: 500;
-  line-height: 1.2;
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  box-sizing: border-box;
+padding: 0 1rem;
+text-align: center;
+font-size: 25px;
+color: #666666;
+font-weight: 500;
 `
 
 const ContactListItem = styled.li`
@@ -212,7 +160,7 @@ const ContactListItem = styled.li`
   display: block;
   padding: 0.75rem 1.25rem;
   margin-bottom: -1px;
-  background-color: #fff;
+  background-color: #ffffe0;
   border: 1px solid rgba(0, 0, 0, 0.125);
   cursor: pointer;
 
@@ -224,40 +172,138 @@ const ContactListItem = styled.li`
   }
 `
 
-class ChatContactList extends React.Component {
 
-  state = {selectedContact: null}
 
-  render(){
-    const {user, usernameList} = this.props
-    const {selectedContact} = this.state
-    return(
-      <div style={{display: 'block'}} >
-        <ContactListHeader>
-          <ContactListTitle>Contact List</ContactListTitle>
-        </ContactListHeader>
-        <ContactListColumn>
-          <ContactList>
-            { usernameList?.map( username => {
-              if (username !== user){
-                return (
-                  <ContactListItem 
-                    key={username+Date.now()}
-                    className={selectedContact === username? 'active': ''} 
-                    onClick={() => this.setState({ selectedContact: username})}>
-                      {username}
-                  </ContactListItem>
-                ) 
-              }
-              else {
-                return null
-              }
-            })
-            }
-          </ContactList>
-        </ContactListColumn>
-      </div>
-    )
+const ChatBox = (props) => {
+
+  const [mObj,setmObj]=useState({})
+  const [messageList,setMessageList]= useState([])
+  const messagesEndRef = useRef(null)
+  const context= useUsersContext()
+  const [users,setUsers]= useState([])
+  const [selectedContact,setSelectedContact]=useState("")
+  const [socketState, setSocketState]=useState()
+  //console.log("We've Re-rendered")
+
+  let socketRef= null
+
+  useEffect(() => {
+    if (context.user.name && !socketRef) {
+
+      socketRef = connection(context.user.name);
+      setSocketState(socketRef)
+  
+      socketRef.on("usersUpate", (usersUpdated) => {
+        console.log(usersUpdated)
+        setUsers([...usersUpdated]);
+      });
+  
+      socketRef.on("recieveMessage", (receivedMessage) =>{ 
+        console.log("Received this: ",receivedMessage)
+        setMessageList((prev) =>[...prev,receivedMessage])
+      });
+    }
+  }, [socketRef,context.user.name])
+  
+
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
+  useEffect(() => {
+    scrollToBottom()
+  }, [messageList])
+
+
+  const submitForm = event => {
+    event.preventDefault();
+    sendMessage(socketState, mObj);
+
+    if(mObj.message.length>=1){
+      setMessageList([...messageList,mObj])
+    }
+
+  }
+  const dummy = () => {};
+
+  return (
+    <>
+    <LogoWrapper >
+      <h3 style={{    paddingTop: '50px'}}>
+        Chat <span>Engo</span>
+      </h3>
+      <br />
+      <h3 style={{color: '#FA8072', fontSize:'15px'}}>
+      User: &nbsp; 
+        {context.user.name}
+      </h3>
+    </LogoWrapper>
+
+    <OuterDiv>
+      <ContactColumn style={{border:'1px solid black', 'border-radius':'10px', marginRight:'10px', marginLeft:'10px'}}>
+        
+        <div style={{display: 'block'}} >
+          <ContactListHeader>
+            <ContactListTitle>Contact List</ContactListTitle>
+          </ContactListHeader>
+          <ContactListColumn>
+            <ContactList>
+              { users?.map( user  => {
+              
+                if(user.name !== context.user.name){
+                return (
+                    <ContactListItem 
+                      key={dummy()}
+                      className={selectedContact === user.name? 'active': ''} 
+                      onClick={() => setSelectedContact(user.name)}>
+                        {user.name}
+                    </ContactListItem>
+                  )}   
+              })
+              }
+            </ContactList>
+          </ContactListColumn>
+        </div>      
+      </ContactColumn>
+      
+      <ChatColumn style={{border:'1px solid black', 'border-radius':'10px'}}>
+        <MessageListHeader>
+          <MessageListTitle>Your Messages </MessageListTitle>
+        </MessageListHeader>
+        <MessageListColumn>
+          <div>
+            {
+              messageList?.map( message => {
+                if(message.from===selectedContact || (message.from === context.user.name && message.to=== selectedContact))
+                return <div key={dummy()} style={{overflow: 'hidden'}}><Message>{ message.message }<span>{message.from}</span></Message></div>
+              })
+            }
+            <div ref={messagesEndRef} />
+          </div>
+        </MessageListColumn>
+        <div >
+          {
+            selectedContact?
+          <MessageForm onSubmit={submitForm}>
+            <Col9>
+              <MessageInput type="text" onChange={event => setmObj({message:event.target.value,to:selectedContact,from:context.user.name}) }  placeholder='Type a message...' />
+            </Col9>
+            <Col3>
+              <MessageButton type="submit" >Send</MessageButton>
+            </Col3>
+          </MessageForm>
+          :
+          null
+          }
+        </div>
+      </ChatColumn>
+    </OuterDiv>
+    </>
+  );
 }
+
+export default withAuth(ChatBox)
+
+
+
 

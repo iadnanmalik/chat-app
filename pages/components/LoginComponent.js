@@ -12,26 +12,30 @@ import { SERVER_URL } from "../../server";
 const LoginComponent = () => {
   const router = useRouter()
   const [token,setToken]=useState('');
+  const [apiErrors,setApiErrors]= useState("")
+
   useEffect(() => {
-    console.log("Token from useEffect from login",token)
+    //console.log("Token from useEffect from login",token)
     localStorage.setItem("token",token)
-    console.log("Token from localStorage from login",localStorage.getItem("token"))
-    
-    
+  //  console.log("Token from localStorage from login",localStorage.getItem("token"))  
   }, [token])
+
+
   const formik = useFormik({
     initialValues: {
       password: '',
-     
       email: '',
     },
+
     validationSchema: Yup.object({
-   
-        password: Yup.string().required("This field is required")
-        .min(8,"Password must be atleast 8 characters")
-        ,
+        
+      password: Yup.string().required("This field is required")
+        .min(8,"Password must be atleast 8 characters"),
+
       email: Yup.string().email('Invalid email address').required('Required'),
-    }),
+    
+      }),
+
     onSubmit: async values => {
       const body= JSON.stringify(values)
       console.log(body)   
@@ -40,11 +44,20 @@ const LoginComponent = () => {
            "Content-Type": "application/json",
         },
       };
-      const res = await axios.post(`${SERVER_URL}/api/auth`, body, config);
-      //console.log(res.data.token)
-      setToken(res.data.token)
-      router.push("/dashboard")    },
+      try {
+        const res = await axios.post(`${SERVER_URL}/api/auth`, body, config);
+      //  console.log(res.data.token)
+        setToken(res.data.token)
+        router.push("/dashboard")    
+          
+      } catch (error) {
+        console.log(error.response.data[0])
+        setApiErrors(error.response.data[0].msg)
+        
+      }
+    },
   });
+
   return (
     <Container>
       <LogoWrapper>
@@ -57,7 +70,7 @@ const LoginComponent = () => {
         <h3>Sign In</h3>
        
         <InputContainer>
-        
+      
             <StyledInput type="email" placeholder="Email" id="email" name="email"  {...formik.getFieldProps('email')}/>
             {formik.touched.email && formik.errors.email ? (
               <Errors>{formik.errors.email}</Errors>
@@ -66,6 +79,10 @@ const LoginComponent = () => {
             {formik.touched.password && formik.errors.password ? (
               <Errors>{formik.errors.password}</Errors>
             ) : null}
+            {apiErrors ? (
+              <Errors>{apiErrors}</Errors>
+            ) : null}
+            
         </InputContainer>
 
         <button type="submit">Sign In</button>

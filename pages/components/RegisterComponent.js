@@ -16,16 +16,14 @@ import { useState, useEffect } from "react";
 const RegisterComponent = () => {
   const router = useRouter()
   const [token,setToken]=useState('');
+  const [apiErrors,setApiErrors]= useState('')
+  
   useEffect(() => {
     console.log("Token from useEffect",token)
     localStorage.setItem("token",token)
-    console.log("Token from localStorage",localStorage.getItem("token"))
-    
-    
+    //console.log("Token from localStorage",localStorage.getItem("token"))  
   }, [token])
-  const handleClick = () =>{
-    console.log("Clicked me!")
-  }
+
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -49,8 +47,8 @@ const RegisterComponent = () => {
         }).min(8,"Password must be atleast 8 characters"),
       email: Yup.string().email('Invalid email address').required('Required'),
     }),
-    onSubmit: async values => {
-     
+    
+    onSubmit: async values => { 
       const body= JSON.stringify(values)
       console.log(body)   
       const config = {
@@ -58,11 +56,17 @@ const RegisterComponent = () => {
            "Content-Type": "application/json",
         },
       };
-      const res = await axios.post(`${SERVER_URL}/api/users`, body, config);
-      //console.log(res.data.token)
-      setToken(res.data.token)
-      router.push("/dashboard")
-    
+      try {
+        const res = await axios.post(`${SERVER_URL}/api/users`, body, config);
+      //  console.log(res.data.token)
+        setToken(res.data.token)
+        router.push("/dashboard")    
+          
+      } catch (error) {
+        //console.log(error.response.data.msg)
+        setApiErrors(error.response.data.msg)
+        
+      }
     },
   });
   return (
@@ -76,9 +80,9 @@ const RegisterComponent = () => {
        </LogoWrapper>
        <Form  onSubmit={formik.handleSubmit}>
          <h3>Sign Up</h3>
-       
+
         <InputContainer>
-            <StyledInput placeholder="Full name" onClick={handleClick} id="name" name="name" {...formik.getFieldProps('name')}/>
+            <StyledInput placeholder="Full name" id="name" name="name" {...formik.getFieldProps('name')}/>
             {formik.touched.name && formik.errors.name ? (
               <Errors style={{"color": "red"}}>{formik.errors.name}</Errors>
             ) : null}
@@ -94,11 +98,13 @@ const RegisterComponent = () => {
             {formik.touched.password2 && formik.errors.password2 ? (
               <Errors>{formik.errors.password2}</Errors>
             ) : null}
-              
+              {apiErrors ? (
+              <Errors>{apiErrors}</Errors>
+            ) : null}
         </InputContainer>
-
         <button type="submit">Sign Up</button>
       </Form>
+
       <div>
          <Terms>
            By signing up, I agree to the Privacy Policy <br /> and Terms of
@@ -117,38 +123,6 @@ const RegisterComponent = () => {
     </Container>
   );
 };
-// const RegisterComponent = () => {
-
-//   return (
-//     <Container>
-//       <LogoWrapper>
-//         <Image  src={logo} alt="" />
-//         <h3>
-//           Chat <span>Engo</span>
-//         </h3>
-//       </LogoWrapper>
-//       <Form>
-//         <h3>Sign Up</h3>
-//       <InputContainer>
-        // <StyledInput placeholder="Full name" />
-        // <StyledInput type="email" placeholder="Email" />
-        // <StyledInput type="password" placeholder="Password" />
-        // <StyledInput type="password" placeholder="Confrim Password" />
-//       </InputContainer>
-//         <button>Sign Up</button>
-//       </Form>
-//       <div>
-//         <Terms>
-//           By signing up, I agree to the Privacy Policy <br /> and Terms of
-//           Service
-//         </Terms>
-//         <h4>
-//           Already have an account? <span> <Link href="/login">Sign In</Link></span>
-//         </h4>
-//       </div>
-//     </Container>
-//   );
-// };
 
 const Terms = styled.p`
   padding: 0 1rem;
