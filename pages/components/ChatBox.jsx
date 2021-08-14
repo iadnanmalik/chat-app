@@ -145,11 +145,11 @@ const ContactListHeader = styled.div`
 `
 
 const ContactListTitle = styled.h2`
-padding: 0 1rem;
-text-align: center;
-font-size: 25px;
-color: #666666;
-font-weight: 500;
+  padding: 0 1rem;
+  text-align: center;
+  font-size: 25px;
+  color: #666666;
+  font-weight: 500;
 `
 
 const ContactListItem = styled.li`
@@ -307,7 +307,7 @@ const ChatBox = (props) => {
                 })
               })}  
               placeholder='Type a message...' />
-              
+
             </Col9>
             <Col3>
               <MessageButton type="submit" >Send</MessageButton>
