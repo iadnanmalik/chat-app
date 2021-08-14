@@ -112,11 +112,7 @@ const RegisterComponent = () => {
          </Terms>
          <h4>
            Already have an account? <span> <Link href="/login">Sign In</Link></span>
-           <span>
-              <Link href="/dashboard">
-                dashboard
-              </Link>
-           </span>
+          
          </h4>
        </div>
 

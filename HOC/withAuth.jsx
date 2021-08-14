@@ -11,7 +11,7 @@ const withAuth = (WrappedComponent) => {
   return (props) => {
     
     const {user,setUser}=useUsersContext()
-    
+
     const loadUser=useCallback( async (localToken)=>{
         setAuth(localToken)
         try {
@@ -35,7 +35,7 @@ const withAuth = (WrappedComponent) => {
         const accessToken = localStorage.getItem("token");
 
         if (!accessToken) {
-            Router.replace("/");
+            Router.replace("/login");
             return null;
         }
 

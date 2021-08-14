@@ -14,7 +14,7 @@ import sendMessage from "../../sockets/sendMessage"
 
 const ContactColumn = styled.div`
   flex: 0 0 33%;
-  max-width: 33%;
+  max-width: 20%;
   position: relative;
   width: 100%;
   
@@ -22,8 +22,8 @@ const ContactColumn = styled.div`
 
 const ChatColumn = styled.div`
   flex: 0 0 60%;
-  max-width: 60%;
-  min-width: 540px;
+  max-width: 75%;
+  min-width: 75%;
   position: relative;
   width: 100%;
   
@@ -35,20 +35,21 @@ const MessageListColumn = styled.div`
   background-color: #daeee5;
   box-sizing: border-box;
   border: 1px solid #dee2e6;
-  height: 400px;                       
+  height: 430px;                       
 `
 
 const Message = styled.div`
   padding: 1rem;
   margin: 0.25rem;
-  float: left;
-  background: #f4f7f9;
   border-radius: 10px;
   border: 1px black solid;
+  font-size: 12px;
+
   span {
     font-size:8px;
-    margin-left:5px;
-    background-color:#9FE2BF;
+    margin-left:6px;
+    color: grey;
+    
   }
 `
 
@@ -85,8 +86,8 @@ const MessageInput = styled.input`
   width: 90%;
   height: calc(1.5em + 0.75rem + 2px);
   padding: 0.375rem 0.75rem;
-  font-size: 1rem;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 300;
   line-height: 1.5; 
   border: none;
   margin: 0.5rem 0;
@@ -129,7 +130,7 @@ const ContactListColumn = styled.div`
 const ContactList = styled.ul`
   display: flex;
   background-color: #ffffe0;
-  height: 500px;
+  height: 530px;
   flex-direction: column;
   padding-left: 0;
   margin-bottom: 0;
@@ -163,7 +164,8 @@ const ContactListItem = styled.li`
   background-color: #ffffe0;
   border: 1px solid rgba(0, 0, 0, 0.125);
   cursor: pointer;
-
+  font-size: 14px;
+  font-weight: 300;
   &.active {
     z-index: 2;
     color: #fff;
@@ -221,6 +223,7 @@ const ChatBox = (props) => {
 
     if(mObj.message.length>=1){
       setMessageList([...messageList,mObj])
+      setmObj({message:""})
     }
 
   }
@@ -240,11 +243,11 @@ const ChatBox = (props) => {
     </LogoWrapper>
 
     <OuterDiv>
-      <ContactColumn style={{border:'1px solid black', 'border-radius':'10px', marginRight:'10px', marginLeft:'10px'}}>
-        
+
+      <ContactColumn style={{border:'1px solid black', 'border-radius':'10px', marginRight:'10px', marginLeft:'10px'}}> 
         <div style={{display: 'block'}} >
           <ContactListHeader>
-            <ContactListTitle>Contact List</ContactListTitle>
+            <ContactListTitle>Active Users</ContactListTitle>
           </ContactListHeader>
           <ContactListColumn>
             <ContactList>
@@ -275,7 +278,13 @@ const ChatBox = (props) => {
             {
               messageList?.map( message => {
                 if(message.from===selectedContact || (message.from === context.user.name && message.to=== selectedContact))
-                return <div key={dummy()} style={{overflow: 'hidden'}}><Message>{ message.message }<span>{message.from}</span></Message></div>
+                return <div key={dummy()} style={{overflow: 'hidden'}}>
+                  { message.from=== context.user.name ?
+                  <Message style={{float:'right',backgroundColor:'#E1EBEE'}}>{ message.message }<span>{message.time}</span></Message>
+                  :
+                  <Message style={{float:'left', backgroundColor:'white'}}>{ message.message }<span>{message.time}</span></Message>
+                }
+                  </div>
               })
             }
             <div ref={messagesEndRef} />
@@ -286,7 +295,19 @@ const ChatBox = (props) => {
             selectedContact?
           <MessageForm onSubmit={submitForm}>
             <Col9>
-              <MessageInput type="text" onChange={event => setmObj({message:event.target.value,to:selectedContact,from:context.user.name}) }  placeholder='Type a message...' />
+              <MessageInput type="text" value={mObj.message} onChange={event => setmObj({
+                message:event.target.value,
+                to:selectedContact,
+                from:context.user.name,
+                time:new Date().toLocaleTimeString([], 
+                { 
+                  hour: '2-digit', 
+                  minute: "2-digit",
+                  hour12:true 
+                })
+              })}  
+              placeholder='Type a message...' />
+              
             </Col9>
             <Col3>
               <MessageButton type="submit" >Send</MessageButton>
