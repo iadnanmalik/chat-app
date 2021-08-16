@@ -1,3 +1,2 @@
-const sendMessage=(socket, message)=> socket.emit("sendMssage",message)
+export const sendMessage = (socket, message) => socket.emit("sendMssage", message)
 
-export default sendMessage
