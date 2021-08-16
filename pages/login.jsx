@@ -2,7 +2,7 @@ import { LoginComponent } from "../components/LoginComponent";
 import { Main } from "../components/Main";
 import { MainContainer } from "../styledComps/artifacts";
 
-export default function Login() {
+function Login() {
   return (
     <MainContainer>
       <Main></Main>
@@ -10,3 +10,4 @@ export default function Login() {
     </MainContainer>
   );
 }
+export default Login;
