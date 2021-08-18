@@ -4,6 +4,7 @@ import { connect } from "../sockets/connect";
 import { withAuth } from "../HOC/withAuth";
 import { LogoWrapper } from "../styledComps/artifacts";
 import { sendMessage } from "../sockets/sendMessage";
+import Link from "next/link";
 
 const OuterDiv = styled.div`
   margin-top: 30px;
@@ -325,6 +326,7 @@ const ChatBox = (props) => {
           ) : null}
         </ChatColumn>
       </OuterDiv>
+      <Link href="/customHookPage">Link Here</Link>
     </Fragment>
   );
 };

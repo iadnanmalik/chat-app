@@ -9,22 +9,33 @@ import {
   Errors,
 } from "../styledComps/artifacts";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useFormik } from "formik";
 import axios from "axios";
 import { SERVER_URL } from "../server";
 import * as Yup from "yup";
 import { FormInput } from "./FormInput";
+import { useApi } from "../Hooks/useApi";
 
 export const LoginComponent = () => {
   const router = useRouter();
   const [token, setToken] = useState("");
   const [apiErrors, setApiErrors] = useState("");
+  const [result, authenticate] = useApi();
 
   useEffect(() => {
     localStorage.setItem("token", token);
   }, [token]);
 
+  useEffect(() => {
+    if (result?.data) {
+      setToken(result.data.token);
+      router.push("/dashboard");
+    } else {
+      console.log(result?.response.data[0]);
+      setApiErrors(result?.response.data[0].msg);
+    }
+  }, [result]);
   const formik = useFormik({
     initialValues: {
       password: "",
@@ -39,21 +50,8 @@ export const LoginComponent = () => {
     }),
 
     onSubmit: async (values) => {
-      const body = JSON.stringify(values);
-      console.log(body);
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      try {
-        const res = await axios.post(`${SERVER_URL}/api/auth`, body, config);
-        setToken(res.data.token);
-        router.push("/dashboard");
-      } catch (error) {
-        console.log(error.response.data[0]);
-        setApiErrors(error.response.data[0].msg);
-      }
+      const url = "/api/auth";
+      authenticate({ url, values });
     },
   });
 
@@ -99,6 +97,7 @@ export const LoginComponent = () => {
             {" "}
             <Link href="/">Sign Up </Link>
           </span>
+          <h3></h3>
         </h4>
       </div>
     </Container>

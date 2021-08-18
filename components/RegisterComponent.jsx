@@ -16,15 +16,27 @@ import {
 import { useRouter } from "next/dist/client/router";
 import { useState, useEffect } from "react";
 import { FormInput } from "./FormInput";
+import { useApi } from "../Hooks/useApi";
 
 export const RegisterComponent = () => {
   const router = useRouter();
   const [token, setToken] = useState("");
   const [apiErrors, setApiErrors] = useState("");
+  const [result, authenticate] = useApi();
 
   useEffect(() => {
     localStorage.setItem("token", token);
   }, [token]);
+
+  useEffect(() => {
+    if (result?.data) {
+      setToken(result.data.token);
+      router.push("/dashboard");
+    } else {
+      console.log(result?.response.data.msg);
+      setApiErrors(result?.response.data.msg);
+    }
+  }, [result]);
 
   const formik = useFormik({
     initialValues: {
@@ -53,20 +65,8 @@ export const RegisterComponent = () => {
     }),
 
     onSubmit: async (values) => {
-      const body = JSON.stringify(values);
-      console.log(body);
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-      try {
-        const res = await axios.post(`${SERVER_URL}/api/users`, body, config);
-        setToken(res.data.token);
-        router.push("/dashboard");
-      } catch (error) {
-        setApiErrors(error.response.data.msg);
-      }
+      const url = "/api/users";
+      authenticate({ url, values });
     },
   });
   return (
