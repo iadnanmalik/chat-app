@@ -36,6 +36,7 @@ export const LoginComponent = () => {
       setApiErrors(result?.response.data[0].msg);
     }
   }, [result]);
+  
   const formik = useFormik({
     initialValues: {
       password: "",
